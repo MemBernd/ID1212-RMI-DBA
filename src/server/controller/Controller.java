@@ -31,12 +31,20 @@ public class Controller extends UnicastRemoteObject implements Server {
 
     @Override
     public void register(String username, String password) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            clientHandler.register(username, password);
+        } catch (SQLException ex) {
+            throw new RemoteException("Couldn't register new user.");
+        }
     }
 
     @Override
     public void unregister(String username, String password) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            clientHandler.unregister(username, password);
+        } catch (SQLException ex) {
+            throw new RemoteException("Couldn't unregister user.");
+        }
     }
 
     @Override
@@ -49,7 +57,7 @@ public class Controller extends UnicastRemoteObject implements Server {
         } catch (SQLException ex) {
             Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
         }
-        throw new AccessException("Error logging in");
+        throw new AccessException("Error logging in.");
     }
 
     @Override
@@ -65,6 +73,7 @@ public class Controller extends UnicastRemoteObject implements Server {
                 clientHandler.printAtClient(id, clientHandler.getFiles(name));
             } catch (SQLException ex) {
                 ex.printStackTrace();
+                throw new AccessException("Error listing files");
             }
         } else {
             throw new AccessException("Not logged in");
@@ -77,10 +86,10 @@ public class Controller extends UnicastRemoteObject implements Server {
         if (userName != null) {
             try {
                 if (clientHandler.uploadFile(id, name, size, pub, read, write))
-                    clientHandler.notify(name, userName, "File modified");
+                    clientHandler.notify(name, userName, "modified");
             } catch (SQLException ex) {
                 ex.printStackTrace();
-                clientHandler.getClient(id).printMessage("Error uploading");
+                throw new AccessException("Error uploading");
             }
         } else {
             throw new AccessException("Not logged in");
@@ -88,13 +97,52 @@ public class Controller extends UnicastRemoteObject implements Server {
     }
 
     @Override
-    public void download(long id, String name) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public FileHolder download(long id, String name) throws RemoteException, AccessException {
+        String userName = clientHandler.getUsername(id);
+        if (userName != null) {
+            try {
+                FileHolder file = null;
+                if ((file = clientHandler.downloadFile(id, name)) != null)
+                    clientHandler.notify(name, userName, "downloaded");
+                return file;
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                throw new AccessException("Error downloading");
+            }
+        } else {
+            throw new AccessException("Not logged in");
+        }
     }
 
     @Override
-    public void delete(long id, String name) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void delete(long id, String name) throws RemoteException, AccessException {
+        String userName = clientHandler.getUsername(id);
+        if (userName != null) {
+            try {
+                if (clientHandler.deleteFile(id, name))
+                    clientHandler.notify(name, userName, "deleted");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                throw new AccessException("Error deleting file");
+            }
+        } else {
+            throw new AccessException("Not logged in");
+        }
+    }
+
+    @Override
+    public void addNotification(long id, String name) throws RemoteException, AccessException {
+        String userName = clientHandler.getUsername(id);
+        if (userName != null) {
+            try {
+                clientHandler.addNotify(id, name);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                throw new AccessException("Error adding notifier");
+            }
+        } else {
+            throw new AccessException("Not logged in");
+        }
     }
 
 }

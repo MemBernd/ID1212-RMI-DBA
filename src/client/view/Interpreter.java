@@ -41,7 +41,10 @@ public class Interpreter extends Thread {
                 "\nlogout: logout" +
                 "\nregister: register [username] [password]" +
                 "\nunregister: unregister [username] [password]" +
-                "\nupload: upload [filename] [public] [read] [write] (true/false)";
+                "\nupload: upload [filename] [public] [read] [write] (true/false)" +
+                "\ndownload: download [filename]" +
+                "\ndelete: delete [filename]" +
+                "\nnotify: notify [filename]";
 
     public Interpreter(Server server) throws RemoteException{
         output = new ConsoleOutput();
@@ -58,18 +61,23 @@ public class Interpreter extends Thread {
                 //System.out.println(cmd.getCmd());
                 switch (cmd.getCmd()) {
                     case CONNECT:
-                        findServer(cmd.getArgument(1));
+                        findServer(cmd.getArgument(0));
                         break;
                     case REGISTER:
-                        server.logout(id);
+                        server.register(cmd.getArgument(0), cmd.getArgument(1));
+                        System.out.println("Successful register.");
                         break;
                     case UNREGISTER:
+                        server.unregister(cmd.getArgument(0), cmd.getArgument(1));
+                        System.out.println("Successful unregister.");
                         break;
                     case LOGIN:
                         id = server.login(output, cmd.getArgument(0), cmd.getArgument(1));
+                        System.out.println("Successful login.");
                         break;
                     case LOGOUT:
                         server.logout(id);
+                        System.out.println("Successful logout.");
                         break;
                     case LIST:
                         server.list(id);
@@ -84,12 +92,18 @@ public class Interpreter extends Thread {
                                 Boolean.parseBoolean(cmd.getArgument(1)),
                                 Boolean.parseBoolean(cmd.getArgument(2)),
                                 Boolean.parseBoolean(cmd.getArgument(3)));
+                        System.out.println("Successful upload.");
                         break;
                     case DOWNLOAD:
+                        server.download(id, cmd.getArgument(0));
                         break;
                     case NOTIFY:
+                        server.addNotification(id, cmd.getArgument(0));
+                        System.out.println("Successful added notifications listener.");
                         break;
                     case DELETE:
+                        server.delete(id, cmd.getArgument(0));
+                        System.out.println("Successful delete.");
                         break;
                     case QUIT:
                         exit = true;

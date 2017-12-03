@@ -28,9 +28,11 @@ public interface Server extends Remote {
     
     void upload(long id, String name, long size, boolean pub, boolean read, boolean write) throws RemoteException, AccessException;
     
-    void download(long id, String name) throws RemoteException;
+    FileHolder download(long id, String name) throws RemoteException, AccessException;
     
-    void delete(long id, String name) throws RemoteException;
+    void delete(long id, String name) throws RemoteException, AccessException;
+    
+    void addNotification(long id, String name) throws RemoteException, AccessException;
     
     
 }

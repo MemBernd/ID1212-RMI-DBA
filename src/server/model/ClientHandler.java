@@ -42,25 +42,39 @@ public class ClientHandler {
         return id;
     }
     
-    public boolean uploadFile(long id, String name, long size, 
-            boolean pub, boolean read, boolean write) throws SQLException {
+    public synchronized FileHolder downloadFile(long id, String file) throws SQLException, AccessException {
+        if(!canRead(id,file))
+            throw new AccessException("Permision conflict");
+        return storage.getFile(file);
+    }
+    
+    public synchronized boolean uploadFile(long id, String name, long size, 
+            boolean pub, boolean read, boolean write) throws SQLException, AccessException {
+        if(!canWrite(id, name))
+            throw new AccessException("Permision conflict (maybe the file already exists)");
         FileHolder file = new FileHolder(name, size, pub, read, write, clientNames.get(id));
         return storage.upload(file, clientNames.get(id));
     }
     
-    public boolean notificationIsValid(long id, String fileName) {
-        //check if owner matches and if file is public
-        return false;
+    public boolean notificationIsValid(long id, String fileName) throws SQLException, AccessException {
+        FileHolder file = storage.getFile(fileName);
+        if (file == null)
+            throw new AccessException("File non existent");
+        return file.isPub() && file.getOwner().equals(clientNames.get(id));
     }
     
     public void notify(String fileName, String user, String action) throws RemoteException {
         Client client;
         if((client = clientsToNotify.get(fileName)) != null) {
-            client.printMessage(fileName + " was " + action + " by " + user);
+            try {
+                client.printMessage(fileName + " was " + action + " by " + user);
+            } catch (Exception e) {
+                clientsToNotify.remove(fileName);
+            }
         }
     }
     
-    public void addNotify(String fileName, long id) throws AccessException {
+    public void addNotify(long id, String fileName) throws AccessException, SQLException {
         if(notificationIsValid(id, fileName)) {
             clientsToNotify.put(fileName, getClient(id));
         } else {
@@ -97,7 +111,21 @@ public class ClientHandler {
         }
         return joiner.toString();
     }
-
+    
+    public boolean register(String username, String password) throws SQLException {
+        return storage.register(username, password);
+    }
+    
+    public boolean unregister(String username, String password) throws SQLException {
+        return storage.unregister(username, password);
+    }
+    
+    public boolean deleteFile(long id, String file) throws AccessException, SQLException {
+        if(!canWrite(id, file))
+            throw new AccessException("Permission to delete denied");
+        return storage.deletFile(file);
+    }
+    
     public void printAtClient(long id, String txt) throws RemoteException {
         getClient(id).printMessage(txt);
     }

@@ -45,6 +45,12 @@ public class DBStorage {
         }
     }
     
+    public boolean deletFile(String fileName) throws SQLException {
+        deleteFile.setString(1, fileName);
+        //System.out.println(deleteFile.toString());
+        return deleteFile.executeUpdate() == 1;
+    }
+    
     public boolean upload(FileHolder file, String owner) throws SQLException {
         uploadFile.setString(1, file.getName());
         uploadFile.setString(2, Long.toString(file.getSize()));
@@ -52,8 +58,22 @@ public class DBStorage {
         uploadFile.setString(4, booleanToString(file.isRead()));
         uploadFile.setString(5, booleanToString(file.isWrite()));
         uploadFile.setString(6, owner);
-        System.out.println(uploadFile.toString());
+        //System.out.println(uploadFile.toString());
         return uploadFile.executeUpdate() == 1;
+    }
+    
+    public boolean register(String username, String password) throws SQLException {
+        registerUser.setString(1, username);
+        registerUser.setString(2, password);
+        //System.out.println(registerUser.toString());
+        return registerUser.executeUpdate() == 1;
+    }
+    
+    public boolean unregister(String username, String password) throws SQLException {
+        unregisterUser.setString(1, username);
+        unregisterUser.setString(2, password);
+        //System.out.println(unregisterUser.toString());
+        return unregisterUser.executeUpdate() == 1;
     }
     
     public FileHolder getFile(String fileName) throws SQLException {
@@ -68,9 +88,8 @@ public class DBStorage {
                                     result.getString(6));
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            return null;
-        }
+        } 
+        return null;
     }
     
     public boolean login(String username, String password) throws SQLException {
@@ -107,7 +126,7 @@ public class DBStorage {
     }
     
     private boolean toBoolean(String txt) {
-        System.out.println(txt);
+        //System.out.println(txt);
         if (txt.equals("1"))
             return true;
         else
@@ -130,7 +149,7 @@ public class DBStorage {
         registerUser = con.prepareStatement("Insert Into " + USER_TABLE +
                         " VALUES (?, ?)");
         unregisterUser = con.prepareStatement("Delete from " + USER_TABLE +
-                        " Where name = ?");
+                        " Where name = ? And password = ?");
         loginUser = con.prepareStatement("Select * from " + USER_TABLE +
                         " Where name = ? And password = ?");
         listFiles = con.prepareStatement("Select * from " + FILE_TABLE +
@@ -138,8 +157,7 @@ public class DBStorage {
         uploadFile = con.prepareStatement("Insert into " + FILE_TABLE +
                         " (`name`, `size`, `public`, `read`, `write`, `owner`) Values " +
                         " (?, ?, ?, ?, ?, ?) On Duplicate key update " +
-                        " `size` = Values(size), public = Values(public), " +
-                        " `read` = Values(`read`), `write` = Values(`write`), `owner` = Values(`owner`)");
+                        " `size` = Values(size)");
         getFile = con.prepareStatement("Select * from " + FILE_TABLE +
                         " Where name = ?");
         deleteFile = con.prepareStatement("Delete from " + FILE_TABLE +
