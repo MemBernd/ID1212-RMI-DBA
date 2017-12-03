@@ -30,20 +30,20 @@ public class Controller extends UnicastRemoteObject implements Server {
     }
 
     @Override
-    public void register(String username, String password) throws RemoteException {
+    public void register(String username, String password) throws RemoteException, AccessException {
         try {
             clientHandler.register(username, password);
         } catch (SQLException ex) {
-            throw new RemoteException("Couldn't register new user.");
+            throw new AccessException("Couldn't register new user. Try another username");
         }
     }
 
     @Override
-    public void unregister(String username, String password) throws RemoteException {
+    public void unregister(String username, String password) throws RemoteException, AccessException {
         try {
             clientHandler.unregister(username, password);
         } catch (SQLException ex) {
-            throw new RemoteException("Couldn't unregister user.");
+            throw new AccessException("Couldn't unregister user.");
         }
     }
 

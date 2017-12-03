@@ -16,9 +16,9 @@ public interface Server extends Remote {
     
     public static final String SERVER_NAME = "server";
     
-    void register(String username, String password) throws RemoteException;
+    void register(String username, String password) throws RemoteException, AccessException;
     
-    void unregister(String username, String password) throws RemoteException;
+    void unregister(String username, String password) throws RemoteException, AccessException;
     
     long login(Client client, String username, String password) throws RemoteException, AccessException;
     
