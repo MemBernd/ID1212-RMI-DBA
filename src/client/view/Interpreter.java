@@ -65,19 +65,19 @@ public class Interpreter extends Thread {
                         break;
                     case REGISTER:
                         server.register(cmd.getArgument(0), cmd.getArgument(1));
-                        System.out.println("Successful register.");
+                        System.out.println("Successful: register.");
                         break;
                     case UNREGISTER:
                         server.unregister(cmd.getArgument(0), cmd.getArgument(1));
-                        System.out.println("Successful unregister.");
+                        System.out.println("Successful: unregister.");
                         break;
                     case LOGIN:
                         id = server.login(output, cmd.getArgument(0), cmd.getArgument(1));
-                        System.out.println("Successful login.");
+                        System.out.println("Successful: login.");
                         break;
                     case LOGOUT:
                         server.logout(id);
-                        System.out.println("Successful logout.");
+                        System.out.println("Successful: logout.");
                         break;
                     case LIST:
                         server.list(id);
@@ -92,18 +92,22 @@ public class Interpreter extends Thread {
                                 Boolean.parseBoolean(cmd.getArgument(1)),
                                 Boolean.parseBoolean(cmd.getArgument(2)),
                                 Boolean.parseBoolean(cmd.getArgument(3)));
-                        System.out.println("Successful upload.");
+                        System.out.println("Successful: upload.");
                         break;
                     case DOWNLOAD:
-                        server.download(id, cmd.getArgument(0));
+                        FileHolder temp = server.download(id, cmd.getArgument(0));
+                        int tempSize = (int) temp.getSize();
+                        byte[] data = new byte[tempSize];
+                        Files.write(Paths.get(temp.getName()), data);
+                        System.out.println("Successful: downloaded " + temp.getName() + ".");
                         break;
                     case NOTIFY:
                         server.addNotification(id, cmd.getArgument(0));
-                        System.out.println("Successful added notifications listener.");
+                        System.out.println("Successful: added notifications listener.");
                         break;
                     case DELETE:
                         server.delete(id, cmd.getArgument(0));
-                        System.out.println("Successful delete.");
+                        System.out.println("Successful: delete.");
                         break;
                     case QUIT:
                         exit = true;
@@ -111,7 +115,9 @@ public class Interpreter extends Thread {
                         break;
                     case HELP:
                         System.out.println(help);
+                        break;
                     default:
+                        System.out.println("unknown command. try 'help' for help.");
 
                 }
             }  catch (RemoteException e) {
@@ -142,6 +148,11 @@ public class Interpreter extends Thread {
         public void printMessage (String output) {
             put.println(output);
             put.print(PROMPT);
+        }
+        
+        @Override
+        public void printWithoutPrompt(String output) {
+            put.println(output);
         }
     }
 }

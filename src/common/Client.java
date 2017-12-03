@@ -15,4 +15,6 @@ import java.rmi.RemoteException;
 public interface Client extends Remote {
     
     void printMessage(String output) throws RemoteException;
+    
+    void printWithoutPrompt(String output) throws RemoteException;
 }

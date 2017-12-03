@@ -78,7 +78,7 @@ public class ClientHandler {
         if(notificationIsValid(id, fileName)) {
             clientsToNotify.put(fileName, getClient(id));
         } else {
-            throw new AccessException("Not the owner");
+            throw new AccessException("Not the owner or file is private");
         }
     }
     
@@ -127,7 +127,7 @@ public class ClientHandler {
     }
     
     public void printAtClient(long id, String txt) throws RemoteException {
-        getClient(id).printMessage(txt);
+        getClient(id).printWithoutPrompt(txt);
     }
 
     public String getUsername(long id) {
